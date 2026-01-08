@@ -28,12 +28,29 @@ root/
 ├── CLAUDE.md
 ├── project/
 │   ├── projectDescription/
-│   └── code/{flavor}/
+│   ├── code/{flavor}/
+│   └── tests/{flavor}/
 ```
 
 - `CLAUDE.md`: This file. Global configuration and rules.
 - `project/projectDescription/`: Documentation (.md files) and shared resources (JSON, images, assets, etc.).
 - `project/code/{flavor}/`: Generated implementations and copied shared resources, one folder per flavor.
+- `project/tests/{flavor}/`: Test cases organized by flavor, mirroring `projectDescription/` paths.
+
+## Test Structure
+
+Tests mirror `projectDescription/` paths, organized by flavor.
+
+**Unit tests**: Mirror individual {class/function}.md files
+- `project/tests/{flavor}/{path}/{File}.test.{ext}`
+
+**Flow tests**: Test code flow/UX flow at directory level
+- `project/tests/{flavor}/{path}/flow.test.{ext}`
+
+**Example:**
+- Documentation: `project/projectDescription/auth/login/UserAuth.md`
+- Unit test: `project/tests/windows/auth/login/UserAuth.test.cpp`
+- Flow test: `project/tests/windows/auth/login/flow.test.cpp` (tests login flow)
 
 ## Path Mirroring
 
@@ -138,9 +155,10 @@ Each class or function has its own .md file in `projectDescription/`.
 2. Follow Code Dependencies to understand required concepts
 3. Generate code to mirror path: `project/code/{flavor}/{path}/`
 4. Copy shared resources from `projectDescription/` to mirrored path in `code/{flavor}/`
-5. Mark requirement checklist items only after implementation is verified
+5. Generate test cases in `project/tests/{flavor}/`
+6. Mark requirement checklist items only after implementation is verified
 
-**Outputs**: Code files and copied resources in `code/{flavor}/`
+**Outputs**: Code files and copied resources in `code/{flavor}/`, test cases in `tests/{flavor}/`
 
 ## Concept Tracking
 

@@ -11,15 +11,15 @@
 
 Marks used in requirement checklists to track which flavors have implemented a requirement.
 
-### Active Marks
--
+**Location**: Active marks are defined in `project/projectDescription/README.md` based on project description.
 
-### Format
-`{mark}: {flavor_name}`
+**Format**: `{mark}: {flavor_name}`
 
-Example:
+**Example**:
 - w: windows
 - l: linux
+
+**Validation**: Before any Coding Phase task, verify flavor marks are defined. If not set or invalid, warn and fail the command. Do not proceed without valid flavor marks.
 
 ## Directory Structure
 

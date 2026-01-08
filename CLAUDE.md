@@ -1,0 +1,209 @@
+# CLAUDE.md
+
+## Definitions
+
+- **Concept**: A distinct idea, component, or behavior described in a README. Each concept has a name, description, and relations to other concepts.
+- **Upstream**: Agent/phase whose outputs are consumed by another. Example: Planning is upstream of Coding because Coding reads what Planning produces.
+- **Downstream**: Agent/phase that consumes outputs from upstream.
+- **Flavor**: A variant of the implementation (e.g., platform, build config, environment).
+
+## Flavor Marks
+
+Marks used in requirement checklists to track which flavors have implemented a requirement.
+
+### Active Marks
+-
+
+### Format
+`{mark}: {flavor_name}`
+
+Example:
+- w: windows
+- l: linux
+
+## Directory Structure
+
+```
+root/
+├── CLAUDE.md
+├── project/
+│   ├── projectDescription/
+│   └── code/{flavor}/
+```
+
+- `CLAUDE.md`: This file. Global configuration and rules.
+- `project/projectDescription/`: Documentation (.md files) and shared resources (JSON, images, assets, etc.).
+- `project/code/{flavor}/`: Generated implementations and copied shared resources, one folder per flavor.
+
+## Path Mirroring
+
+Documentation location determines implementation location.
+
+**Rule**: All generated code MUST be written only to its corresponding mirror path. No exceptions.
+
+**How to calculate:**
+1. Take documentation path: `project/projectDescription/{path}/{File}.md`
+2. Extract relative path: `{path}/`
+3. Mirror to: `project/code/{flavor}/{path}/{File}.{ext}`
+
+**Example:**
+- Documentation: `project/projectDescription/auth/login/UserAuth.md`
+- Relative path: `auth/login/`
+- Code output: `project/code/windows/auth/login/UserAuth.cpp`
+
+## README.md Structure
+
+Each folder in `projectDescription/` contains a README.md. All content in README.md is organized as concept entries.
+
+### Concept Entry Format
+
+```markdown
+## Concept: {Name}
+{Description at this abstraction level only}
+
+- Related (Active): {Path}/README.md: {ConceptName}
+- Related (Passive): {Path}/README.md: {ConceptName} [{keyword1}, {keyword2}]
+- Looked Up By: {Path}/README.md
+```
+
+**Fields:**
+- **Description**: What this concept is, at current level. For more detail, follow relations.
+- **Related (Active)**: Always read this referenced concept to understand the current concept.
+- **Related (Passive)**: Only read if keywords match what you're looking for.
+- **Looked Up By**: Which README files reference this concept. Used for change propagation.
+
+### Code Dependencies Section
+
+At the end of each README.md, list which code definition files depend on which concepts:
+
+```markdown
+## Code Dependencies
+- {ClassName}.md: {ConceptA}, {ConceptB}
+- {functionName}.md: {Path}/README.md: {ConceptC}
+```
+
+**Can reference:**
+- Concepts in same README: just the concept name
+- Concepts in other READMEs: `{Path}/README.md: {ConceptName}`
+
+## {class/function}.md Structure
+
+Each class or function has its own .md file in `projectDescription/`.
+
+```markdown
+## Description
+{What this class/function does}
+
+## Signature
+```
+{Generic signature that works across all flavors}
+```
+
+## Requirements
+- signature:
+- {requirement1}:
+- {requirement2}: {mark}
+- {requirement3}: {mark}, {mark}
+```
+
+**Rules:**
+- `signature` is always a required checklist item
+- Format: `- {requirement}: {marks}`
+- Empty after colon means no flavor has implemented yet
+- Marks must match Active Marks defined in this file
+- If a requirement references a custom class, use the actual class name from another .md file
+
+## Phases
+
+### Planning Phase
+
+**What**: Creating and modifying .md files in `projectDescription/`.
+
+**Tasks:**
+1. Understand project requirements
+2. Create README.md in each folder with concept entries
+3. Create {class/function}.md files with description, signature, and requirements
+4. If design needs more detail, create subfolder and repeat
+5. Maintain concept relations and Looked Up By entries
+6. Generate shared resources (JSON, images, assets) in `projectDescription/`
+
+**Outputs**: .md files and shared resources in `projectDescription/`
+
+### Coding Phase
+
+**What**: Generating code in `code/{flavor}/` based on .md files.
+
+**Tasks:**
+1. Read the {class/function}.md file
+2. Follow Code Dependencies to understand required concepts
+3. Generate code to mirror path: `project/code/{flavor}/{path}/`
+4. Copy shared resources from `projectDescription/` to mirrored path in `code/{flavor}/`
+5. Mark requirement checklist items only after implementation is verified
+
+**Outputs**: Code files and copied resources in `code/{flavor}/`
+
+## Concept Tracking
+
+### When You Add a Relation
+
+If concept A references concept B:
+1. Go to the README.md containing concept B
+2. Add your README path to concept B's `Looked Up By` list
+
+This enables change propagation.
+
+### When You Modify a Concept
+
+Run change propagation:
+
+1. Check the concept's `Looked Up By` list
+2. For each README path listed:
+   - Open that README
+   - Find the concept with the same name (it references this one)
+   - Verify logic is still valid, modify if needed
+3. Check `Code Dependencies` in your README
+4. For each {class/function}.md that depends on this concept:
+   - **Remove all marks** from its requirements - implementations need re-verification
+5. In Coding Phase: re-verify and re-mark requirements after updating code
+
+## Agent Communication
+
+### AgentTalk.md
+
+Agents report issues to upstream agents. Upstream agents address issues by modifying their outputs.
+
+**Location**: Create AgentTalk.md in the directory where the issue occurs. Issues stay localized to their context.
+
+**Key rule**: Never put solutions in AgentTalk.md. Only describe problems. Solutions go in the outputs (e.g., .md files, code).
+
+### When to Use
+
+- Agent encounters an issue it cannot resolve at current phase
+- Issue requires upstream phase to modify its outputs
+
+**Example**: Coding agent finds a function is too complex → writes issue to AgentTalk.md → Planning agent splits the function in the .md files → Coding agent regenerates from updated .md files.
+
+### Format
+
+```markdown
+## Open
+
+### {Short description}
+- **From**: {phase or agent identifier}
+- **To**: {upstream phase or agent identifier}
+- **File**: {path to relevant file}
+- **Issue**: {description of the problem, not the solution}
+
+## Resolved
+
+### {Short description}
+- **Addressed in**: {path to modified file(s)}
+```
+
+### Cleanup Process
+
+1. Upstream agent addresses issue by modifying outputs
+2. Upstream agent moves issue from `Open` to `Resolved`, noting which files were modified
+3. Downstream agent continues work based on updated outputs
+4. Once downstream agent confirms success, delete the entry from `Resolved`
+5. Goal: AgentTalk.md should be empty when all issues are addressed

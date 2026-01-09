@@ -210,10 +210,32 @@ Maximum 8 agents running concurrently to avoid context over-consumption. Wait fo
 
 ## Agent Spawning
 
+Sub-agents can be used for both Planning and Coding Phase tasks.
+
 When spawning sub-agents, include in the task prompt:
 - "Read CLAUDE.md first before starting work"
 
 This ensures sub-agents follow project rules.
+
+### Dependency Handling
+
+**Planning Phase**: Directory hierarchy determines dependency order. Complete parent directories before child directories.
+
+**Coding Phase**: Code Dependencies in README.md determines dependency order. Complete dependencies before dependents.
+
+- **Independent tasks**: Can spawn sub-agents in parallel
+- **Dependent tasks**: Wait for dependency to complete before spawning dependent task
+
+### Shared File Updates
+
+When sub-agent needs to update a file outside its scope:
+- Append request to AgentTalk.md in the directory under `## Updates` section
+- Sub-agents only append, never modify existing entries
+- Main agent processes requests and cleans up AgentTalk.md
+
+### Planning Verification
+
+Planning quality is verified after Coding Phase completes. If flow tests fail, the issue may be in Planning (requirements/design) or Coding (implementation). Use AgentTalk.md to report issues upstream if Planning needs revision.
 
 ## Agent Communication
 
@@ -235,6 +257,13 @@ Agents report issues to upstream agents. Upstream agents address issues by modif
 ### Format
 
 ```markdown
+## Updates
+
+### {Short description}
+- **From**: {agent identifier}
+- **File**: {path to file to update}
+- **Action**: {what update is needed}
+
 ## Open
 
 ### {Short description}

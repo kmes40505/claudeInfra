@@ -184,6 +184,10 @@ Run change propagation:
    - **Remove all marks** from its requirements - implementations need re-verification
 5. In Coding Phase: re-verify and re-mark requirements after updating code
 
+## Agent Limits
+
+Maximum 8 agents running concurrently to avoid context over-consumption. Wait for agents to complete before spawning new ones if limit is reached.
+
 ## Agent Communication
 
 ### AgentTalk.md

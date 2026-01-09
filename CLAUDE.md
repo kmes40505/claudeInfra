@@ -37,6 +37,10 @@ root/
 - `project/code/{flavor}/`: Generated implementations and copied shared resources, one folder per flavor.
 - `project/tests/{flavor}/`: Test cases organized by flavor, mirroring `projectDescription/` paths.
 
+## Cross-Flavor Documentation
+
+All .md files in `projectDescription/` must be generic and cross-flavor. Do not include flavor-specific details. Flavor-specific implementation belongs in code only.
+
 ## Test Structure
 
 Tests mirror `projectDescription/` paths, organized by flavor.

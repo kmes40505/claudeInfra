@@ -205,7 +205,7 @@ Run change propagation:
    - Verify logic is still valid, modify if needed
 3. Check `Code Dependencies` in your README
 4. For each {class/function}.md that depends on this concept:
-   - **Remove all marks** from its requirements - implementations need re-verification
+   - **Remove marks only for affected requirements** - only those implementations need re-verification
 5. In Coding Phase: re-verify and re-mark requirements after updating code
 
 ## Agent Limits

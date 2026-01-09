@@ -245,7 +245,15 @@ Agents report issues to upstream agents. Upstream agents address issues by modif
 
 **Location**: Create AgentTalk.md in the directory where the issue occurs. Issues stay localized to their context.
 
-**Key rule**: Never put solutions in AgentTalk.md. Only describe problems. Solutions go in the outputs (e.g., .md files, code).
+**Key rule**: AgentTalk.md is for reporting problems only. Never put solutions or fix instructions in AgentTalk.md.
+
+Agents fix problems by following their phase's tasks as defined in the Phases section. Do not bypass the normal workflow.
+
+**Example flow for a bug:**
+1. Bug identified (by user, test failure, or other means)
+2. Planning agent modifies requirements in {class/function}.md, removes affected marks
+3. Coding agent sees updated requirements, follows normal coding process
+4. Verification agent marks requirements after tests pass
 
 ### When to Use
 

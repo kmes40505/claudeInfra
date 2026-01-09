@@ -255,6 +255,12 @@ Agents fix problems by following their phase's tasks as defined in the Phases se
 3. Coding agent sees updated requirements, follows normal coding process
 4. Verification agent marks requirements after tests pass
 
+### Upstream-First Principle
+
+Fix issues at their source. Update upstream phase outputs so downstream phases handle the fix through their normal workflow.
+
+**Example:** Bug found → Planning Phase adds requirement to .md file → Coding Phase generates test and fix → verification marks complete
+
 ### When to Use
 
 - Agent encounters an issue it cannot resolve at current phase

@@ -156,9 +156,29 @@ Each class or function has its own .md file in `projectDescription/`.
 3. Generate code to mirror path: `project/code/{flavor}/{path}/`
 4. Copy shared resources from `projectDescription/` to mirrored path in `code/{flavor}/`
 5. Generate test cases in `project/tests/{flavor}/`
-6. Mark requirement checklist items only after implementation is verified
-
 **Outputs**: Code files and copied resources in `code/{flavor}/`, test cases in `tests/{flavor}/`
+
+## Requirement Verification
+
+Coding agents implement and test. Verification agent (or main agent) marks requirements.
+
+### Verification Rules
+
+Before marking a requirement:
+1. Implementation exists at correct mirror path
+2. Corresponding test exists
+3. Test passes
+
+If any condition fails, do not mark the requirement.
+
+### Verification Process
+
+1. Coding agent implements code and creates tests
+2. Coding agent runs tests
+3. Verification agent (or main agent) confirms test results
+4. Only verification agent marks requirements in {class/function}.md
+
+Coding agents must NOT mark requirements themselves. Report completion to main/verification agent instead.
 
 ## Concept Tracking
 
@@ -187,6 +207,13 @@ Run change propagation:
 ## Agent Limits
 
 Maximum 8 agents running concurrently to avoid context over-consumption. Wait for agents to complete before spawning new ones if limit is reached.
+
+## Agent Spawning
+
+When spawning sub-agents, include in the task prompt:
+- "Read CLAUDE.md first before starting work"
+
+This ensures sub-agents follow project rules.
 
 ## Agent Communication
 

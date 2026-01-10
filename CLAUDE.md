@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## Compliance
+
+All agents (including main agent) must follow every rule in this file without exception. No shortcuts, even for "simple" tasks. If a workflow is defined (bug fixes, requirements, verification), follow it completely.
+
 ## Definitions
 
 - **Concept**: A distinct idea, component, or behavior described in a README. Each concept has a name, description, and relations to other concepts.

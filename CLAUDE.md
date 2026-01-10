@@ -51,6 +51,10 @@ Tests mirror `projectDescription/` paths, organized by flavor.
 **Flow tests**: Test code flow/UX flow at directory level
 - `project/tests/{flavor}/{path}/flow.test.{ext}`
 
+**Integrity tests**: Test that all code in a directory (including subfolders) integrates correctly
+- `project/tests/{flavor}/{path}/integrity.test.{ext}`
+- What to test depends on what the code does
+
 **Example:**
 - Documentation: `project/projectDescription/auth/login/UserAuth.md`
 - Unit test: `project/tests/windows/auth/login/UserAuth.test.cpp`
@@ -107,6 +111,16 @@ At the end of each README.md, list which code definition files depend on which c
 - Concepts in same README: just the concept name
 - Concepts in other READMEs: `{Path}/README.md: {ConceptName}`
 
+### Integrity Tests Section
+
+At the end of README.md, if directory has components that integrate:
+
+```markdown
+## Integrity Tests
+- {integration test case 1}:
+- {integration test case 2}: {mark}
+```
+
 ## {class/function}.md Structure
 
 Each class or function has its own .md file in `projectDescription/`.
@@ -160,6 +174,10 @@ Each class or function has its own .md file in `projectDescription/`.
 3. Generate code to mirror path: `project/code/{flavor}/{path}/`
 4. Copy shared resources from `projectDescription/` to mirrored path in `code/{flavor}/`
 5. Generate test cases in `project/tests/{flavor}/`
+6. Read README.md for Integrity Tests section
+7. Implement integrity tests in `project/tests/{flavor}/{path}/integrity.test.{ext}`
+8. Run integrity tests - fix issues before proceeding
+
 **Outputs**: Code files and copied resources in `code/{flavor}/`, test cases in `tests/{flavor}/`
 
 ## Requirement Verification

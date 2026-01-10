@@ -182,23 +182,30 @@ Each class or function has its own .md file in `projectDescription/`.
 
 ## Requirement Verification
 
+Applies to {class/function}.md requirements and README.md Integrity Tests.
+
 Coding agents implement and test. Verification agent (or main agent) marks requirements.
 
 ### Verification Rules
 
-Before marking a requirement:
+**For {class/function}.md requirements:**
 1. Implementation exists at correct mirror path
 2. Corresponding test exists
 3. Test passes
 
-If any condition fails, do not mark the requirement.
+**For README.md Integrity Tests:**
+1. Test file exists at `project/tests/{flavor}/{path}/integrity.test.{ext}`
+2. Test covers the requirement to be marked
+3. Test passes
+
+Mark each requirement individually. If any condition fails, do not mark.
 
 ### Verification Process
 
 1. Coding agent implements code and creates tests
 2. Coding agent runs tests
 3. Verification agent (or main agent) confirms test results
-4. Only verification agent marks requirements in {class/function}.md
+4. Only verification agent marks requirements in {class/function}.md or README.md
 
 Coding agents must NOT mark requirements themselves. Report completion to main/verification agent instead.
 

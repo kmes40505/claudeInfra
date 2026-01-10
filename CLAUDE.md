@@ -220,8 +220,8 @@ Any change to code, tests, or documentation may invalidate existing requirements
 This ensures requirements always reflect the current state.
 
 **Examples (not exhaustive):**
-- Modifying code → update requirements in corresponding {class/function}.md
-- Modifying tests → update requirements verified by that test
+- Modifying code → update requirements in corresponding {class/function}.md (use path mirroring)
+- Modifying tests → update requirements in corresponding .md files (use path mirroring to find them)
 - Modifying concepts → update requirements that depend on that concept (via Code Dependencies, Looked Up By)
 
 ## Concept Tracking

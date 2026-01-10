@@ -178,6 +178,10 @@ Each class or function has its own .md file in `projectDescription/`.
 7. Implement integration tests in `project/tests/{flavor}/{path}/integration.test.{ext}`
 8. Run integration tests - fix issues before proceeding
 
+**Test Rules:**
+- Never create ignored, skipped, or disabled tests. All tests must be active and executable.
+- If a requirement cannot be tested in the current setup, report upstream. Planner appends a test condition to the requirement (e.g., `{requirement} [testable: {specific setup}]`).
+
 **Outputs**: Code files and copied resources in `code/{flavor}/`, test cases in `tests/{flavor}/`
 
 ## Requirement Verification
@@ -192,11 +196,13 @@ Coding agents implement and test. Verification agent (or main agent) marks requi
 1. Implementation exists at correct mirror path
 2. Corresponding test exists
 3. Test passes
+4. Test is not ignored, skipped, or disabled
 
 **For README.md Integration Tests:**
 1. Test file exists at `project/tests/{flavor}/{path}/integration.test.{ext}`
 2. Test covers the requirement to be marked
 3. Test passes
+4. Test is not ignored, skipped, or disabled
 
 Mark each requirement individually. If any condition fails, do not mark.
 

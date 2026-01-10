@@ -209,6 +209,21 @@ Mark each requirement individually. If any condition fails, do not mark.
 
 Coding agents must NOT mark requirements themselves. Report completion to main/verification agent instead.
 
+### Requirement Update Rule
+
+Any change to code, tests, or documentation may invalidate existing requirements or marks. Before making changes:
+
+1. Planning Phase: Update affected requirements in .md files (unmark, modify, add, or remove as needed)
+2. Coding Phase: Make the changes
+3. Verification Phase: Re-verify and re-mark after tests pass
+
+This ensures requirements always reflect the current state.
+
+**Examples (not exhaustive):**
+- Modifying code → update requirements in corresponding {class/function}.md
+- Modifying tests → update requirements verified by that test
+- Modifying concepts → update requirements that depend on that concept (via Code Dependencies, Looked Up By)
+
 ## Concept Tracking
 
 ### When You Add a Relation

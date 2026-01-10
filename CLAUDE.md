@@ -43,7 +43,7 @@ root/
 
 ## Cross-Flavor Documentation
 
-All .md files in `projectDescription/` must be generic and cross-flavor. Do not include flavor-specific details. Flavor-specific implementation belongs in code only.
+All .md content in `projectDescription/` must be generic and cross-flavor. If anything is condition-specific, annotate inline (e.g., `[windows only]`, `[requires admin]`).
 
 ## Test Structure
 

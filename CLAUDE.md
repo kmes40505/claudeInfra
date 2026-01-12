@@ -165,6 +165,10 @@ Each class or function has its own .md file in `projectDescription/`.
 4. If design needs more detail, create subfolder and repeat
 5. Maintain concept relations and Looked Up By entries
 6. Generate shared resources (JSON, images, assets) in `projectDescription/`
+7. When removing planning phase outputs:
+   a. Update all references (remove from Code Dependencies, Looked Up By)
+   b. Add final requirement to the file: `- remove corresponding code, resources, and this file:`
+   c. Do not delete the file - Coding Phase handles the actual deletion
 
 **Outputs**: .md files and shared resources in `projectDescription/`
 
@@ -181,6 +185,11 @@ Each class or function has its own .md file in `projectDescription/`.
 6. Read README.md for Integration Tests section
 7. Implement integration tests in `project/tests/{flavor}/{path}/integration.test.{ext}`
 8. Run integration tests - fix issues before proceeding
+9. When a planning phase output contains a removal requirement:
+   a. Delete corresponding code at mirror path
+   b. Delete corresponding tests
+   c. Delete associated resources only if not referenced by other files
+   d. Delete the file itself
 
 **Test Rules:**
 - Never create ignored, skipped, or disabled tests. All tests must be active and executable.

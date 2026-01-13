@@ -17,7 +17,7 @@ RefineProgress.md must exist. If not, run RefineWorkflow.md first.
 1. Read task definitions
 2. Ensure dependencies are completed
 3. Execute Planning Phase for all selected tasks
-4. Follow CLAUDE.md to complete the remaining phases(DO NOT SKIP UNLESS NOT REQUIRED)
+4. Follow CLAUDE.md to complete the remaining phases(DO NOT SKIP UNLESS CANNOT BE DONE)
 
 ### Escalation
 

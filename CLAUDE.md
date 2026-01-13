@@ -64,6 +64,16 @@ Tests mirror `projectDescription/` paths, organized by flavor.
 - Unit test: `project/tests/windows/auth/login/UserAuth.test.cpp`
 - Flow test: `project/tests/windows/auth/login/flow.test.cpp` (tests login flow)
 
+## Running WinUI Tests
+
+WinUI tests cannot run via `dotnet test` due to MSBuild integration limitations. Run the executable directly:
+```bash
+dotnet build project/tests/winUITests -p:Platform=x64
+./project/tests/winUITests/bin/x64/Debug/net8.0-windows10.0.19041.0/Tidbits.Tests.WinUI.exe
+```
+
+**WinUI Requirement Condition**: Requirements using WinUI controls (Button, RadioButton, FrameworkElement, etc.) should be marked with `[windows: winUI]`. Tests go in `project/tests/winUITests/{path}/{File}.WinUI.test.cs`.
+
 ## Path Mirroring
 
 Documentation location determines implementation location.
@@ -193,7 +203,10 @@ Each class or function has its own .md file in `projectDescription/`.
 
 **Test Rules:**
 - Never create ignored, skipped, or disabled tests. All tests must be active and executable.
-- If a requirement cannot be tested in the current setup, report upstream. Planner appends a test condition to the requirement (e.g., `{requirement} [testable: {specific setup}]`).
+- Requirements may have flavor-specific conditions: `[{flavor}: {condition}]`
+  - `[windows: winUI]` - windows tests require WinUI test project
+  - `[all: mock server]` - all flavors require mock server for testing
+  - `[windows only]` - requirement applies to windows only
 
 **Outputs**: Code files and copied resources in `code/{flavor}/`, test cases in `tests/{flavor}/`
 

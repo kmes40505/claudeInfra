@@ -2,7 +2,7 @@
 
 Follow CLAUDE.md rules for all changes.
 
-Analyze project for improvements. Add to or update RefineProgress.md.
+Analyze project for improvements. Add to or modify RefineProgress.md.
 
 Improvement scope:
 - Project structure
@@ -20,7 +20,7 @@ Planning (RefineProgress.md generation):
 - No execution during planning
 - Planning work is cross-flavor (projectDescription/ is generic)
 
-Scope limitation: Tasks in RefineProgress.md describe planning phase work. Execution follows all applicable phases as defined in CLAUDE.md.
+Scope limitation: All tasks in RefineProgress.md are planning phase only (create, modify, or remove .md files in projectDescription/).
 
 Validation: After modifying RefineProgress.md, verify all tasks comply with CLAUDE.md and rules from this file.
 

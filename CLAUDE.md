@@ -213,7 +213,7 @@ Each class or function has its own .md file in `projectDescription/`.
 5. Maintain concept relations and Looked Up By entries
 6. Generate shared resources (JSON, images, assets) in `projectDescription/`
 7. When removing planning phase outputs:
-   a. Update all references (remove from Code Dependencies, Looked Up By)
+   a. Update all references (remove from Looked Up By)
    b. Add final requirement to the file: `- remove corresponding code, resources, and this file:`
    c. Do not delete the file - Coding Phase handles the actual deletion
 
@@ -225,7 +225,7 @@ Each class or function has its own .md file in `projectDescription/`.
 
 **Tasks:**
 1. Read the {class/function}.md file
-2. Follow Code Dependencies to understand required concepts
+2. Read the directory's README.md to understand required concepts
 3. Generate code to mirror path: `project/code/{flavor}/{path}/`
 4. Copy shared resources from `projectDescription/` to mirrored path in `code/{flavor}/`
 5. Generate test cases in `project/tests/{flavor}/`
@@ -291,7 +291,7 @@ This ensures requirements always reflect the current state.
 **Examples (not exhaustive):**
 - Modifying code → update requirements in corresponding {class/function}.md (use path mirroring)
 - Modifying tests → update requirements in corresponding .md files (use path mirroring to find them)
-- Modifying concepts → update requirements that depend on that concept (via Code Dependencies, Looked Up By)
+- Modifying concepts → update requirements that depend on that concept (via Looked Up By)
 
 ## Concept Tracking
 
@@ -313,10 +313,9 @@ Run change propagation:
    - Open that README
    - Find the concept with the same name (it references this one)
    - Verify logic is still valid, modify if needed
-3. Check `Code Dependencies` in your README
-4. For each {class/function}.md that depends on this concept:
+3. For each {class/function}.md in the same directory that depends on this concept:
    - **Remove marks only for affected requirements** - only those implementations need re-verification
-5. In Coding Phase: re-verify and re-mark requirements after updating code
+4. In Coding Phase: re-verify and re-mark requirements after updating code
 
 ## Agent Limits
 
@@ -335,7 +334,7 @@ This ensures sub-agents follow project rules.
 
 **Planning Phase**: Directory hierarchy determines dependency order. Complete parent directories before child directories.
 
-**Coding Phase**: Code Dependencies in README.md determines dependency order. Complete dependencies before dependents.
+**Coding Phase**: Related (Active) links in README.md determine dependency order. Complete dependencies before dependents.
 
 - **Independent tasks**: Can spawn sub-agents in parallel
 - **Dependent tasks**: Wait for dependency to complete before spawning dependent task

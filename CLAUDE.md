@@ -111,20 +111,6 @@ Each folder in `projectDescription/` contains a README.md. All content in README
 - **Related (Passive)**: Only read if keywords match what you're looking for.
 - **Looked Up By**: Which README files reference this concept. Used for change propagation.
 
-### Code Dependencies Section
-
-At the end of each README.md, list which code definition files depend on which concepts:
-
-```markdown
-## Code Dependencies
-- {ClassName}.md: {ConceptA}, {ConceptB}
-- {functionName}.md: {Path}/README.md: {ConceptC}
-```
-
-**Can reference:**
-- Concepts in same README: just the concept name
-- Concepts in other READMEs: `{Path}/README.md: {ConceptName}`
-
 ### Integration Tests Section
 
 At the end of README.md, if directory has components that integrate:
@@ -134,6 +120,57 @@ At the end of README.md, if directory has components that integrate:
 - {integration test case 1}:
 - {integration test case 2}: {mark}
 ```
+
+### Cross-Directory Integration Tests
+
+When a concept has a `Related (Active/Passive)` link to another directory's README, add integration tests to verify all dependent behaviors.
+
+**Placement**: Test entry goes in the README that defines the Related link.
+
+**Test Code Split**: Each README's test file provides helper functions for parts defined in that README. Specify these in README.md so code changes trigger helper updates.
+
+```markdown
+## Integration Helpers
+- GetAllComponentTypes(): returns all component type names
+- GetFieldCategoriesForComponent(type): returns field categories for component
+```
+
+| Defined In | Helper Function | Used By |
+|------------|-----------------|---------|
+| `components/` test | `GetAllComponentTypes()` | `fields/` integration test |
+| `fields/` test | `GetFieldCategoriesForComponent(type)` | `components/` integration test |
+
+```csharp
+// In components integration test (components has Related to fields)
+foreach (var type in ComponentsTestHelper.GetAllComponentTypes()) {
+    var categories = FieldsTestHelper.GetFieldCategoriesForComponent(type);
+    Assert.IsNotNull(categories);
+}
+```
+
+Each module owns verification for its own concepts. Test fails if either side breaks the contract.
+
+### {class/function}.md Relationship Rules
+
+{class/function}.md files have no Related links or Looked Up By. They relate only to their directory's README.md implicitly.
+
+**External References**: Other READMEs reference concepts in README.md, never {class/function}.md directly.
+
+**Concept Surfacing**: When a {class/function}.md introduces a referenceable concept:
+- Add concise concept entry in README.md (purpose, Related links)
+- Keep detailed definition in {class/function}.md (description, signature, requirements)
+
+```
+fields/README.md:
+  ## Concept: Field Category Registry   ← concise, has Related links
+
+fields/FieldCategoryRegistry.md:
+  ## Description                        ← detailed definition
+  ## Signature
+  ## Requirements
+```
+
+**Integration Helper Check**: When modifying {class/function}.md, check README.md's Integration Helpers section. If the change affects data returned by a helper (e.g., adding new component type), update the helper in the test file.
 
 ## {class/function}.md Structure
 
@@ -263,6 +300,7 @@ This ensures requirements always reflect the current state.
 If concept A references concept B:
 1. Go to the README.md containing concept B
 2. Add your README path to concept B's `Looked Up By` list
+3. If relation crosses directories, add integration tests for all behaviors that depend on the referenced concept (see Cross-Directory Integration Tests)
 
 This enables change propagation.
 

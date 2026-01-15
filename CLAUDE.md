@@ -127,23 +127,28 @@ When a concept has a `Related (Active/Passive)` link to another directory's READ
 
 **Placement**: Test entry goes in the README that defines the Related link.
 
-**Test Code Split**: Each README's test file provides helper functions for parts defined in that README. Specify these in README.md so code changes trigger helper updates.
+**Integration Helpers Scope**: Each README's test file provides helpers for parts defined in that README. Specify helpers in README.md so code changes trigger helper updates.
+
+**Integration Helpers Purpose**: Single source of truth for data or behaviors that cross-directory tests need, but aren't exposed as a single production function. Update ONE helper, all dependent tests automatically reflect the change.
+
+**Helper needed:**
+- `GetAllComponentTypes()`: Cross-directory tests iterate over all components. Add component #28 → update helper → all tests include it.
+- `ExecuteWarnFlow()`: Cross-directory tests verify workflow. Workflow changes func1→func2→func3 to func1→func3 → update helper → all tests verify new flow.
+
+**No helper needed:**
+- Production has `Registry.GetCategoriesForComponent(type)` - call it directly, no duplication.
+- If production later adds a function that a helper provides, remove the helper and use production.
 
 ```markdown
 ## Integration Helpers
 - GetAllComponentTypes(): returns all component type names
-- GetFieldCategoriesForComponent(type): returns field categories for component
 ```
-
-| Defined In | Helper Function | Used By |
-|------------|-----------------|---------|
-| `components/` test | `GetAllComponentTypes()` | `fields/` integration test |
-| `fields/` test | `GetFieldCategoriesForComponent(type)` | `components/` integration test |
 
 ```csharp
 // In components integration test (components has Related to fields)
 foreach (var type in ComponentsTestHelper.GetAllComponentTypes()) {
-    var categories = FieldsTestHelper.GetFieldCategoriesForComponent(type);
+    // Use production code directly - no helper needed
+    var categories = FieldCategoryRegistry.GetInstance().GetCategoriesForComponent(type);
     Assert.IsNotNull(categories);
 }
 ```

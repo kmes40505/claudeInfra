@@ -139,6 +139,8 @@ When a concept has a `Related (Active/Passive)` link to another directory's READ
 - Production has `Registry.GetCategoriesForComponent(type)` - call it directly, no duplication.
 - If production later adds a function that a helper provides, remove the helper and use production.
 
+**Demand-Driven Creation**: Only create integration helpers when a test actually requires one. Do not speculatively define helpers in README.md before tests need them. Write the test first—if production code doesn't expose the needed functionality, then add the helper.
+
 ```markdown
 ## Integration Helpers
 - GetAllComponentTypes(): returns all component type names

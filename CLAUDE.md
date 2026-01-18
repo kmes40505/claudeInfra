@@ -314,31 +314,131 @@ This ensures requirements always reflect the current state.
 
 ## Agent Dispatch
 
-When working on tasks, the main agent MUST use the appropriate skill commands:
+Main agent uses the Task tool with `subagent_type="general-purpose"` to dispatch work to phase agents. This enables parallel execution and automatic workflow continuation.
 
-### Planning Tasks
-Use `/plan` when:
-- Creating new features or components
-- Modifying requirements or documentation
-- Designing new functionality
+### Task Prompts
 
-### Coding Tasks
-Use `/code <flavor> <path>` when:
-- Implementing requirements from a {class/function}.md file
-- Generating code for a specific flavor
-- Handling removal requirements
+**Planning Agent:**
+```
+Read CLAUDE.md first.
 
-### Validation Tasks
-Use `/validate <flavor> <path>` when:
-- Verifying an implementation is complete
-- Marking requirements after coding is done
-- Checking test coverage and results
+You are a Planning Agent. Follow Planning Agent rules in CLAUDE.md.
+
+Task: {describe what needs to be planned}
+Path: project/projectDescription/{path}
+
+When complete, report:
+- Files created/modified
+- Any issues for upstream (use AgentTalk.md)
+```
+
+**Coding Agent:**
+```
+Read CLAUDE.md first.
+
+You are a Coding Agent for flavor: {flavor}. Follow Coding Agent rules in CLAUDE.md.
+
+Task: Implement requirements from {path}
+Documentation: project/projectDescription/{path}
+Code output: project/code/{flavor}/{path}
+Test output: project/tests/{flavor}/{path}
+
+Do NOT mark requirements. Report completion status when done.
+```
+
+**Validation Agent:**
+```
+Read CLAUDE.md first.
+
+You are a Validation Agent for flavor: {flavor}. Follow Validation Agent rules in CLAUDE.md.
+
+Task: Verify and mark requirements for {path}
+Documentation: project/projectDescription/{path}
+Code location: project/code/{flavor}/{path}
+Test location: project/tests/{flavor}/{path}
+
+Mark requirements that pass all verification rules.
+Report final status with list of marked/unmarked requirements.
+```
+
+### Workflow Continuation
+
+Main agent MUST continue the workflow after each phase completes:
+
+1. **After Planning completes:**
+   - Check if coding is needed for the planned items
+   - Launch Coding Agent for each flavor (parallel if independent)
+
+2. **After Coding completes:**
+   - Immediately launch Validation Agent for the same flavor/path
+   - Do NOT wait for user input between coding and validation
+
+3. **After Validation completes:**
+   - Report final status to user
+   - Process any AgentTalk.md issues if present
+
+### Workflow Entry Point
+
+When user requests implementation work, main agent determines starting phase:
+
+1. **No .md files exist for the feature** → Start with Planning Agent
+2. **.md files exist with unmarked requirements** → Start with Coding Agent
+3. **Code exists but requirements unmarked** → Start with Validation Agent
+4. **All requirements marked** → Report complete, ask user what's next
+
+Main agent checks file existence before dispatching, does not assume.
+
+### Dispatch Patterns
+
+**Single flavor implementation:**
+```
+1. Launch Task: Coding Agent for {flavor} {path}
+2. Wait for completion
+3. Launch Task: Validation Agent for {flavor} {path}
+4. Report results
+```
+
+**Multi-flavor implementation (parallel):**
+```
+1. Launch Tasks in parallel:
+   - Coding Agent for windows {path}
+   - Coding Agent for linux {path}
+2. Wait for all to complete
+3. Launch Tasks in parallel:
+   - Validation Agent for windows {path}
+   - Validation Agent for linux {path}
+4. Report results
+```
+
+**Full workflow from planning:**
+```
+1. Launch Task: Planning Agent for {path}
+2. Wait for completion
+3. For each flavor, launch Coding + Validation sequence
+4. Report results
+```
+
+### Dependency Handling
+
+**Planning Phase**: Directory hierarchy determines dependency order. Complete parent directories before child directories.
+
+**Coding Phase**: Related (Active) links in README.md determine dependency order. Complete dependencies before dependents.
+
+- **Independent tasks**: Can spawn sub-agents in parallel
+- **Dependent tasks**: Wait for dependency to complete before spawning dependent task
+
+### Shared File Updates
+
+When sub-agent needs to update a file outside its scope:
+- Append request to AgentTalk.md in the directory under `## Updates` section
+- Sub-agents only append, never modify existing entries
+- Main agent processes requests and cleans up AgentTalk.md
 
 ### Dispatch Rules
-1. For multi-flavor implementations, launch `/code` for each flavor (can be parallel if independent)
-2. Always run `/validate` after `/code` completes
-3. Maximum 8 agents concurrent (per existing Agent Limits rule)
-4. Main agent coordinates but does NOT bypass skills for phase work
+1. Main agent coordinates workflow, does NOT do phase work directly
+2. Always run Validation after Coding completes - no user prompt needed
+3. Use `run_in_background=true` for parallel agents, check with TaskOutput
+4. Include "Read CLAUDE.md first" in every agent prompt
 
 ## Concept Tracking
 
@@ -367,35 +467,6 @@ Run change propagation:
 ## Agent Limits
 
 Maximum 8 agents running concurrently to avoid context over-consumption. Wait for agents to complete before spawning new ones if limit is reached.
-
-## Agent Spawning
-
-Sub-agents can be used for both Planning and Coding Phase tasks.
-
-When spawning sub-agents, include in the task prompt:
-- "Read CLAUDE.md first before starting work"
-
-This ensures sub-agents follow project rules.
-
-### Dependency Handling
-
-**Planning Phase**: Directory hierarchy determines dependency order. Complete parent directories before child directories.
-
-**Coding Phase**: Related (Active) links in README.md determine dependency order. Complete dependencies before dependents.
-
-- **Independent tasks**: Can spawn sub-agents in parallel
-- **Dependent tasks**: Wait for dependency to complete before spawning dependent task
-
-### Shared File Updates
-
-When sub-agent needs to update a file outside its scope:
-- Append request to AgentTalk.md in the directory under `## Updates` section
-- Sub-agents only append, never modify existing entries
-- Main agent processes requests and cleans up AgentTalk.md
-
-### Planning Verification
-
-Planning quality is verified after Coding Phase completes. If flow tests fail, the issue may be in Planning (requirements/design) or Coding (implementation). Use AgentTalk.md to report issues upstream if Planning needs revision.
 
 ## Agent Communication
 

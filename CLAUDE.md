@@ -206,9 +206,19 @@ Each class or function has its own .md file in `projectDescription/`.
 - Marks must match Active Marks defined in this file
 - If a requirement references a custom class, use the actual class name from another .md file
 
-## Phases
+## Agent-Specific Rules
 
-### Planning Phase
+### Agent Independence
+
+Each agent must independently verify all information required for its tasks. Never rely on or trust results reported by other agents. Always:
+- Read source files directly (don't trust summaries from other agents)
+- Check file existence independently (don't assume files were created)
+- Run tests independently (don't trust pass/fail reports from other agents)
+- Validate paths and locations independently (don't trust path calculations from other agents)
+
+This ensures each agent catches errors that previous agents may have missed or misreported.
+
+### Planning Agent
 
 **What**: Creating and modifying .md files in `projectDescription/`.
 
@@ -222,11 +232,11 @@ Each class or function has its own .md file in `projectDescription/`.
 7. When removing planning phase outputs:
    a. Update all references (remove from Looked Up By)
    b. Add final requirement to the file: `- remove corresponding code, resources, and this file:`
-   c. Do not delete the file - Coding Phase handles the actual deletion
+   c. Do not delete the file - Coding Agent handles the actual deletion
 
 **Outputs**: .md files and shared resources in `projectDescription/`
 
-### Coding Phase
+### Coding Agent
 
 **What**: Generating code in `code/{flavor}/` based on .md files.
 
@@ -247,6 +257,7 @@ Each class or function has its own .md file in `projectDescription/`.
 
 **Test Rules:**
 - Never create ignored, skipped, or disabled tests. All tests must be active and executable.
+- Run ALL tests for the flavor, not just the ones you created. Ensure no regressions.
 - Requirements may have flavor-specific conditions: `[{flavor}: {condition}]`
   - `[windows: winUI]` - windows tests require WinUI test project
   - `[all: mock server]` - all flavors require mock server for testing
@@ -254,21 +265,23 @@ Each class or function has its own .md file in `projectDescription/`.
 
 **Outputs**: Code files and copied resources in `code/{flavor}/`, test cases in `tests/{flavor}/`
 
-## Requirement Verification
+### Validation Agent
+
+**What**: Verifying implementations and marking requirements.
 
 Applies to {class/function}.md requirements and README.md Integration Tests.
 
-Coding agents implement and test. Verification agent (or main agent) marks requirements.
+Coding agents implement and test. Validation agent (or main agent) marks requirements.
 
-### Verification Rules
+**Verification Rules:**
 
-**For {class/function}.md requirements:**
+For {class/function}.md requirements:
 1. Implementation exists at correct mirror path
 2. Corresponding test exists
 3. Test passes
 4. Test is not ignored, skipped, or disabled
 
-**For README.md Integration Tests:**
+For README.md Integration Tests:
 1. Test file exists at `project/tests/{flavor}/{path}/integration.test.{ext}`
 2. Test covers the requirement to be marked
 3. Test passes
@@ -276,22 +289,21 @@ Coding agents implement and test. Verification agent (or main agent) marks requi
 
 Mark each requirement individually. If any condition fails, do not mark.
 
-### Verification Process
-
+**Verification Process:**
 1. Coding agent implements code and creates tests
 2. Coding agent runs tests
-3. Verification agent (or main agent) confirms test results
-4. Only verification agent marks requirements in {class/function}.md or README.md
+3. Validation agent (or main agent) confirms test results
+4. Only validation agent marks requirements in {class/function}.md or README.md
 
-Coding agents must NOT mark requirements themselves. Report completion to main/verification agent instead.
+Coding agents must NOT mark requirements themselves. Report completion to main/validation agent instead.
 
-### Requirement Update Rule
+**Requirement Update Rule:**
 
 Any change to code, tests, or documentation may invalidate existing requirements or marks. Before making changes:
 
-1. Planning Phase: Update affected requirements in .md files (unmark, modify, add, or remove as needed)
-2. Coding Phase: Make the changes
-3. Verification Phase: Re-verify and re-mark after tests pass
+1. Planning Agent: Update affected requirements in .md files (unmark, modify, add, or remove as needed)
+2. Coding Agent: Make the changes
+3. Validation Agent: Re-verify and re-mark after tests pass
 
 This ensures requirements always reflect the current state.
 
@@ -299,6 +311,34 @@ This ensures requirements always reflect the current state.
 - Modifying code → update requirements in corresponding {class/function}.md (use path mirroring)
 - Modifying tests → update requirements in corresponding .md files (use path mirroring to find them)
 - Modifying concepts → update requirements that depend on that concept (via Looked Up By)
+
+## Agent Dispatch
+
+When working on tasks, the main agent MUST use the appropriate skill commands:
+
+### Planning Tasks
+Use `/plan` when:
+- Creating new features or components
+- Modifying requirements or documentation
+- Designing new functionality
+
+### Coding Tasks
+Use `/code <flavor> <path>` when:
+- Implementing requirements from a {class/function}.md file
+- Generating code for a specific flavor
+- Handling removal requirements
+
+### Validation Tasks
+Use `/validate <flavor> <path>` when:
+- Verifying an implementation is complete
+- Marking requirements after coding is done
+- Checking test coverage and results
+
+### Dispatch Rules
+1. For multi-flavor implementations, launch `/code` for each flavor (can be parallel if independent)
+2. Always run `/validate` after `/code` completes
+3. Maximum 8 agents concurrent (per existing Agent Limits rule)
+4. Main agent coordinates but does NOT bypass skills for phase work
 
 ## Concept Tracking
 
@@ -367,7 +407,7 @@ Agents report issues to upstream agents. Upstream agents address issues by modif
 
 **Key rule**: AgentTalk.md is for reporting problems only. Never put solutions or fix instructions in AgentTalk.md.
 
-Agents fix problems by following their phase's tasks as defined in the Phases section. Do not bypass the normal workflow.
+Agents fix problems by following their agent's tasks as defined in the Agent-Specific Rules section. Do not bypass the normal workflow.
 
 **Example flow for a bug:**
 1. Bug identified (by user, test failure, or other means)

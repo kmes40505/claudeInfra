@@ -294,7 +294,7 @@ For README.md Integration Tests:
 4. Test is not ignored, skipped, or disabled
 5. Test actually verifies the requirement's intended behavior
 
-Mark each requirement individually. If any condition fails, do not mark.
+Mark each requirement individually. If any condition fails, do not mark; if already marked, remove the mark.
 
 **Test Logic Validation:**
 Before marking, verify the test logic matches the requirement's intent. A passing test is insufficient if it doesn't actually test the intended behavior. If a test is flawed (tautologies, wrong assertions, testing unrelated functionality, or not matching the .md requirement), do not mark. Report the issue to the coding agent for correction.

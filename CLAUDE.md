@@ -262,6 +262,7 @@ This ensures each agent catches errors that previous agents may have missed or m
   - `[windows: winUI]` - windows tests require WinUI test project
   - `[all: mock server]` - all flavors require mock server for testing
   - `[windows only]` - requirement applies to windows only
+- Do NOT mark requirements. Report completion to main/validation agent instead.
 
 **Outputs**: Code files and copied resources in `code/{flavor}/`, test cases in `tests/{flavor}/`
 
@@ -280,14 +281,19 @@ For {class/function}.md requirements:
 2. Corresponding test exists
 3. Test passes
 4. Test is not ignored, skipped, or disabled
+5. Test actually verifies the requirement's intended behavior
 
 For README.md Integration Tests:
 1. Test file exists at `project/tests/{flavor}/{path}/integration.test.{ext}`
 2. Test covers the requirement to be marked
 3. Test passes
 4. Test is not ignored, skipped, or disabled
+5. Test actually verifies the requirement's intended behavior
 
 Mark each requirement individually. If any condition fails, do not mark.
+
+**Test Logic Validation:**
+Before marking, verify the test logic matches the requirement's intent. A passing test is insufficient if it doesn't actually test the intended behavior. If a test is flawed (tautologies, wrong assertions, testing unrelated functionality, or not matching the .md requirement), do not mark. Report the issue to the coding agent for correction.
 
 **Verification Process:**
 1. Coding agent implements code and creates tests

@@ -218,6 +218,10 @@ Each agent must independently verify all information required for its tasks. Nev
 
 This ensures each agent catches errors that previous agents may have missed or misreported.
 
+### Scope Boundaries
+
+Do not perform tasks belonging to other phases. If you encounter work outside your scope (e.g., coding agent finds design issues, validation agent finds bugs to fix), stop and report to the main agent rather than handling it directly.
+
 ### Planning Agent
 
 **What**: Creating and modifying .md files in `projectDescription/`.
@@ -335,7 +339,7 @@ Path: project/projectDescription/{path}
 
 When complete, report:
 - Files created/modified
-- Any issues for upstream (use AgentTalk.md)
+- Any issues that need upstream attention
 ```
 
 **Coding Agent:**
@@ -381,7 +385,7 @@ Main agent MUST continue the workflow after each phase completes:
 
 3. **After Validation completes:**
    - Report final status to user
-   - Process any AgentTalk.md issues if present
+   - Process any reported issues by dispatching appropriate agents
 
 ### Workflow Entry Point
 
@@ -433,13 +437,6 @@ Main agent checks file existence before dispatching, does not assume.
 - **Independent tasks**: Can spawn sub-agents in parallel
 - **Dependent tasks**: Wait for dependency to complete before spawning dependent task
 
-### Shared File Updates
-
-When sub-agent needs to update a file outside its scope:
-- Append request to AgentTalk.md in the directory under `## Updates` section
-- Sub-agents only append, never modify existing entries
-- Main agent processes requests and cleans up AgentTalk.md
-
 ### Dispatch Rules
 1. Main agent coordinates workflow, does NOT do phase work directly
 2. Always run Validation after Coding completes - no user prompt needed
@@ -476,63 +473,21 @@ Maximum 8 agents running concurrently to avoid context over-consumption. Wait fo
 
 ## Agent Communication
 
-### AgentTalk.md
+Agents report issues in their completion response to the main agent. The main agent coordinates resolution by dispatching appropriate agents.
 
-Agents report issues to upstream agents. Upstream agents address issues by modifying their outputs.
-
-**Location**: Create AgentTalk.md in the directory where the issue occurs. Issues stay localized to their context.
-
-**Key rule**: AgentTalk.md is for reporting problems only. Never put solutions or fix instructions in AgentTalk.md.
-
-Agents fix problems by following their agent's tasks as defined in the Agent-Specific Rules section. Do not bypass the normal workflow.
-
-**Example flow for a bug:**
-1. Bug identified (by user, test failure, or other means)
-2. Planning agent modifies requirements in {class/function}.md, removes affected marks
-3. Coding agent sees updated requirements, follows normal coding process
-4. Verification agent marks requirements after tests pass
+When an agent encounters an issue it cannot resolve:
+- Report the issue in the completion response
+- Main agent receives the report and dispatches the appropriate phase agent
 
 ### Upstream-First Principle
 
-Fix issues at their source. Update upstream phase outputs so downstream phases handle the fix through their normal workflow.
+Fix issues at their source:
+- Design/requirements issues → dispatch Planning Agent
+- Implementation/test issues → dispatch Coding Agent
+- Verification issues → dispatch Validation Agent
 
-**Example:** Bug found → Planning Phase adds requirement to .md file → Coding Phase generates test and fix → verification marks complete
-
-### When to Use
-
-- Agent encounters an issue it cannot resolve at current phase
-- Issue requires upstream phase to modify its outputs
-
-**Example**: Coding agent finds a function is too complex → writes issue to AgentTalk.md → Planning agent splits the function in the .md files → Coding agent regenerates from updated .md files.
-
-### Format
-
-```markdown
-## Updates
-
-### {Short description}
-- **From**: {agent identifier}
-- **File**: {path to file to update}
-- **Action**: {what update is needed}
-
-## Open
-
-### {Short description}
-- **From**: {phase or agent identifier}
-- **To**: {upstream phase or agent identifier}
-- **File**: {path to relevant file}
-- **Issue**: {description of the problem, not the solution}
-
-## Resolved
-
-### {Short description}
-- **Addressed in**: {path to modified file(s)}
-```
-
-### Cleanup Process
-
-1. Upstream agent addresses issue by modifying outputs
-2. Upstream agent moves issue from `Open` to `Resolved`, noting which files were modified
-3. Downstream agent continues work based on updated outputs
-4. Once downstream agent confirms success, delete the entry from `Resolved`
-5. Goal: AgentTalk.md should be empty when all issues are addressed
+**Example flow for a bug:**
+1. Bug identified (by user, test failure, or agent report)
+2. Main agent dispatches Planning Agent to update requirements in {class/function}.md
+3. Main agent dispatches Coding Agent to implement fix
+4. Main agent dispatches Validation Agent to verify and mark

@@ -433,7 +433,7 @@ When user requests implementation work, main agent determines starting phase:
 
 1. **No .md files exist for the feature** → Start with Planning Agent
 2. **.md files exist with unmarked requirements** → Start with Coding Agent
-3. **Code exists but requirements unmarked** → Start with Validation Agent
+3. **Code exists but requirements unmarked** → Start with Testing or Validation Agent
 4. **All requirements marked** → Report complete, ask user what's next
 
 Main agent checks file existence before dispatching, does not assume.

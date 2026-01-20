@@ -261,14 +261,24 @@ Do not perform tasks belonging to other phases. If you encounter work outside yo
 
 **Test Rules:**
 - Never create ignored, skipped, or disabled tests. All tests must be active and executable.
-- Run ALL tests for the flavor, not just the ones you created. Ensure no regressions.
+- Run tests for the code you wrote/modified to verify correctness before reporting completion.
+- Do NOT run all tests - Testing Agent handles that.
 - Requirements may have flavor-specific conditions: `[{flavor}: {condition}]`
-  - `[windows: winUI]` - windows tests require WinUI test project
+  - `[windows: winUI]` - windows flavor uses winUI setup for this requirement
   - `[all: mock server]` - all flavors require mock server for testing
-  - `[windows only]` - requirement applies to windows only
-- Do NOT mark requirements. Report completion to main/validation agent instead.
+  - `[windows only]` - requirement applies to windows flavor only
+- Do NOT mark requirements. Report completion to main agent.
 
 **Outputs**: Code files and copied resources in `code/{flavor}/`, test cases in `tests/{flavor}/`
+
+### Testing Agent
+
+**What**: Running all tests for a specific setup.
+
+**Tasks:**
+1. Run all tests for the specified setup
+2. Report results (passed, failed, skipped)
+3. Report any skipped/ignored tests as an issue
 
 ### Validation Agent
 
@@ -344,9 +354,9 @@ You are a Planning Agent. Follow Planning Agent rules in CLAUDE.md.
 Task: {describe what needs to be planned}
 Path: project/projectDescription/{path}
 
-When complete, report:
+Report when complete:
 - Files created/modified
-- Any issues that need upstream attention
+- Any issues requiring upstream attention
 ```
 
 **Coding Agent:**
@@ -360,7 +370,26 @@ Documentation: project/projectDescription/{path}
 Code output: project/code/{flavor}/{path}
 Test output: project/tests/{flavor}/{path}
 
-Do NOT mark requirements. Report completion status when done.
+Do NOT mark requirements.
+
+Report when complete:
+- Files created/modified
+- Completion status
+```
+
+**Testing Agent:**
+```
+Read CLAUDE.md first.
+
+You are a Testing Agent. Follow Testing Agent rules in CLAUDE.md.
+
+Task: Run all tests for setup: {setup}
+
+Report when complete:
+- Setup name
+- Total tests, passed, failed
+- List of failed tests with failure details
+- Any skipped/ignored tests found
 ```
 
 **Validation Agent:**
@@ -374,8 +403,9 @@ Documentation: project/projectDescription/{path}
 Code location: project/code/{flavor}/{path}
 Test location: project/tests/{flavor}/{path}
 
-Mark requirements that pass all verification rules.
-Report final status with list of marked/unmarked requirements.
+Report when complete:
+- Requirements marked
+- Requirements that failed verification (with reasons)
 ```
 
 ### Workflow Continuation
@@ -387,12 +417,15 @@ Main agent MUST continue the workflow after each phase completes:
    - Launch Coding Agent for each flavor (parallel if independent)
 
 2. **After Coding completes:**
-   - Immediately launch Validation Agent for the same flavor/path
-   - Do NOT wait for user input between coding and validation
+   - Launch Testing Agent for relevant setup(s)
 
-3. **After Validation completes:**
-   - Report final status to user
-   - Process any reported issues by dispatching appropriate agents
+3. **After Testing completes:**
+   - If tests fail: return to Coding phase
+   - If tests pass: launch Validation Agent
+
+4. **After Validation completes:**
+   - If issues found: return to Coding phase
+   - If all valid: report final status to user
 
 ### Workflow Entry Point
 
@@ -411,29 +444,42 @@ Main agent checks file existence before dispatching, does not assume.
 ```
 1. Launch Task: Coding Agent for {flavor} {path}
 2. Wait for completion
-3. Launch Task: Validation Agent for {flavor} {path}
-4. Report results
+3. Launch Task: Testing Agent for {setup}
+4. Wait for completion
+5. If tests fail: return to step 1
+6. Launch Task: Validation Agent for {flavor}
+   - Verify all marks targeted for change (additions and removals)
+   - Verify marks for any requirements whose tests were modified
+7. Wait for completion
+8. If issues found: return to step 1
+9. Report results
 ```
 
 **Multi-flavor implementation (parallel):**
 ```
-1. Launch Tasks in parallel:
-   - Coding Agent for windows {path}
-   - Coding Agent for linux {path}
+1. Launch Tasks in parallel: Coding Agent for each {flavor} {path}
 2. Wait for all to complete
-3. Launch Tasks in parallel:
-   - Validation Agent for windows {path}
-   - Validation Agent for linux {path}
-4. Report results
+3. Launch Tasks in parallel: Testing Agent for each relevant {setup}
+4. Wait for all to complete
+5. If any setup fails: return to step 1
+6. Launch Tasks in parallel: Validation Agent for each {flavor}
+   - Verify all marks targeted for change (additions and removals)
+   - Verify marks for any requirements whose tests were modified
+7. Wait for all to complete
+8. If any issues found: return to step 1
+9. Report results
 ```
 
 **Full workflow from planning:**
 ```
 1. Launch Task: Planning Agent for {path}
 2. Wait for completion
-3. For each flavor, launch Coding + Validation sequence
+3. For each flavor, launch Coding + Testing + Validation sequence
 4. Report results
 ```
+
+**Grouped fixes:**
+When test fixes conflict with each other (fixing one breaks another), group the related tests and fix them together in a single Coding Agent.
 
 ### Dependency Handling
 
@@ -446,9 +492,8 @@ Main agent checks file existence before dispatching, does not assume.
 
 ### Dispatch Rules
 1. Main agent coordinates workflow, does NOT do phase work directly
-2. Always run Validation after Coding completes - no user prompt needed
-3. Use `run_in_background=true` for parallel agents, check with TaskOutput
-4. Include "Read CLAUDE.md first" in every agent prompt
+2. Use `run_in_background=true` for parallel agents, check with TaskOutput
+3. Include "Read CLAUDE.md first" in every agent prompt
 
 ## Concept Tracking
 
@@ -490,11 +535,13 @@ When an agent encounters an issue it cannot resolve:
 
 Fix issues at their source:
 - Design/requirements issues → dispatch Planning Agent
-- Implementation/test issues → dispatch Coding Agent
+- Implementation/test code issues → dispatch Coding Agent
+- Test execution → dispatch Testing Agent
 - Verification issues → dispatch Validation Agent
 
 **Example flow for a bug:**
 1. Bug identified (by user, test failure, or agent report)
 2. Main agent dispatches Planning Agent to update requirements in {class/function}.md
 3. Main agent dispatches Coding Agent to implement fix
-4. Main agent dispatches Validation Agent to verify and mark
+4. Main agent dispatches Testing Agent to run all tests
+5. Main agent dispatches Validation Agent to verify and mark

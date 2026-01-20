@@ -296,6 +296,12 @@ For README.md Integration Tests:
 
 Mark each requirement individually. If any condition fails, do not mark; if already marked, remove the mark.
 
+**Flavor-Specific Marking:**
+When verifying a specific flavor, only modify marks for that flavor:
+- To add: append the flavor mark (e.g., `w` → `w, a`)
+- To remove: remove only that flavor's mark (e.g., `w, a` → `w`)
+- Never remove or modify marks for other flavors
+
 **Test Logic Validation:**
 Before marking, verify the test logic matches the requirement's intent. A passing test is insufficient if it doesn't actually test the intended behavior. If a test is flawed (tautologies, wrong assertions, testing unrelated functionality, or not matching the .md requirement), do not mark. Report the issue to the coding agent for correction.
 

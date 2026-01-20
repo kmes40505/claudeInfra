@@ -282,10 +282,11 @@ Coding agents implement and test. Validation agent (or main agent) marks require
 
 For {class/function}.md requirements:
 1. Implementation exists at correct mirror path
-2. Corresponding test exists
-3. Test passes
-4. Test is not ignored, skipped, or disabled
-5. Test actually verifies the requirement's intended behavior
+2. Implementation signature matches the .md signature (class/function names, parameters, return types)
+3. Corresponding test exists
+4. Test passes
+5. Test is not ignored, skipped, or disabled
+6. Test actually verifies the requirement's intended behavior
 
 For README.md Integration Tests:
 1. Test file exists at `project/tests/{flavor}/{path}/integration.test.{ext}`

@@ -218,10 +218,6 @@ Each agent must independently verify all information required for its tasks. Nev
 
 This ensures each agent catches errors that previous agents may have missed or misreported.
 
-### Result Passing
-
-When coordinating workflows, main agent should pass relevant results between sub-agents in task prompts (e.g., test outcomes, verified file paths, search results). Sub-agents should use passed results instead of re-running the same operations.
-
 ### Scope Boundaries
 
 Do not perform tasks belonging to other phases. If you encounter work outside your scope (e.g., coding agent finds design issues, validation agent finds bugs to fix), stop and report to the main agent rather than handling it directly.
@@ -298,14 +294,14 @@ For {class/function}.md requirements:
 1. Implementation exists at correct mirror path
 2. Implementation signature matches the .md signature (class/function names, parameters, return types)
 3. Corresponding test exists
-4. Test passes
+4. Test passes (main agent provides test results)
 5. Test is not ignored, skipped, or disabled
 6. Test actually verifies the requirement's intended behavior
 
 For README.md Integration Tests:
 1. Test file exists at `project/tests/{flavor}/{path}/integration.test.{ext}`
 2. Test covers the requirement to be marked
-3. Test passes
+3. Test passes (main agent provides test results)
 4. Test is not ignored, skipped, or disabled
 5. Test actually verifies the requirement's intended behavior
 
@@ -323,10 +319,12 @@ Before marking, verify the test logic matches the requirement's intent. A passin
 **Verification Process:**
 1. Coding agent implements code and creates tests
 2. Coding agent runs tests
-3. Validation agent (or main agent) confirms test results
+3. Main agent runs tests (or dispatches Testing Agent) and provides results to Validation Agent
 4. Only validation agent marks requirements in {class/function}.md or README.md
 
 Coding agents must NOT mark requirements themselves. Report completion to main/validation agent instead.
+
+Validation Agent does NOT run tests. If test results not provided, verify all other parts but do not mark.
 
 **Requirement Update Rule:**
 
@@ -346,6 +344,10 @@ This ensures requirements always reflect the current state.
 ## Agent Dispatch
 
 Main agent uses the Task tool with `subagent_type="general-purpose"` to dispatch work to phase agents. This enables parallel execution and automatic workflow continuation.
+
+### Result Passing
+
+When coordinating workflows, main agent should pass relevant results between sub-agents in task prompts (e.g., test outcomes, verified file paths, search results). Sub-agents should use passed results instead of re-running the same operations.
 
 ### Task Prompts
 
@@ -407,9 +409,17 @@ Documentation: project/projectDescription/{path}
 Code location: project/code/{flavor}/{path}
 Test location: project/tests/{flavor}/{path}
 
+{If provided: "{flavor} test results - Pass: X, Failed: Y, Ignored: Z"}
+
+Do NOT run tests.
+
+If test results provided: mark requirements that pass all verification.
+If test results NOT provided: verify all other parts, report results, do not mark. Report "marks not applied - test results not provided."
+
 Report when complete:
-- Requirements marked
-- Requirements that failed verification (with reasons)
+- Verification results (implementation exists, signature matches, test exists, test logic correct)
+- Requirements marked (if test results provided)
+- Requirements not marked (with reasons)
 ```
 
 ### Workflow Continuation

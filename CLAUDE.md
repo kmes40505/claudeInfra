@@ -213,10 +213,14 @@ Each class or function has its own .md file in `projectDescription/`.
 Each agent must independently verify all information required for its tasks. Never rely on or trust results reported by other agents. Always:
 - Read source files directly (don't trust summaries from other agents)
 - Check file existence independently (don't assume files were created)
-- Run tests independently (don't trust pass/fail reports from other agents)
+- Run tests independently (don't trust pass/fail reports from other agents), unless main agent passes verified results in the task prompt
 - Validate paths and locations independently (don't trust path calculations from other agents)
 
 This ensures each agent catches errors that previous agents may have missed or misreported.
+
+### Result Passing
+
+When coordinating workflows, main agent should pass relevant results between sub-agents in task prompts (e.g., test outcomes, verified file paths, search results). Sub-agents should use passed results instead of re-running the same operations.
 
 ### Scope Boundaries
 
